@@ -1,0 +1,12 @@
+.button {
+	-fx-padding: 10;
+	-fx-background-color: #FFE4C4;
+}
+.button:hover {-fx-background-color: #DEB887}
+
+.root{
+	/* Makes the background a nice colour */
+	-fx-background-color: honeydew;
+	-fx-font-weight: bold;
+
+}
