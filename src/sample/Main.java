@@ -11,15 +11,6 @@ import java.net.*;
 
 public class Main extends Application {
 
-    private ServerSocket serverSocket = null;
-    private int port;
-
-    public Main(int port) throws IOException {
-        serverSocket = new ServerSocket(port);
-        this.port = port;
-    }
-
-
     @Override
     public void start(Stage primaryStage) throws Exception{
         Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
