@@ -5,10 +5,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.BorderPane;
@@ -58,7 +55,6 @@ public class Main extends Application {
         Circle circle = new Circle(6.0f);
         circle.setEffect(dropShadow);
         circle.setFill(colour);
-        System.out.println(grid.getChildren().size());
         if(colour == Color.DARKRED) {
             if(grid.getChildren().size() == 3){ grid.getChildren().remove(1, 3); }
             connection = new Text("Not connected");
@@ -127,16 +123,49 @@ public class Main extends Application {
 
         //Setting up connection tab on bottom right
         connectionStatus(bottomButtons, Color.DARKRED);
-        connectionStatus(bottomButtons, Color.LIMEGREEN);
-        connectionStatus(bottomButtons, Color.DARKRED);
+        //TODO: connectionStatus(bottomButtons, Color.LIMEGREEN); Add actual connections
+
+        //double click on a row to open file
+        leftTable.setRowFactory(e -> {
+            TableRow<localData> row = new TableRow<>();
+            row.setOnMouseClicked(e2 -> {
+                if(e2.getClickCount() == 2 && (!row.isEmpty())) {
+                    localData rowData = row.getItem();
+                    if (rowData.getFileName().contains(".txt")) { //Checking if the file is a text file
+                        try {
+                            String path = "";
+                            for (File current : content) {
+                                if (current.getName().equals(rowData.getFileName())) {
+                                    path = current.getAbsolutePath();
+                                }
+                                System.out.println(current.getName());
+                                System.out.println(rowData.getFileName());
+                                System.out.println(path);
+                            }
+                            Runtime.getRuntime().exec(new String[]{"notepad", path});
+                        } catch (IOException e3) {
+                            System.out.println(e3);
+                        }
+                    }else{ //Open a window saying "That's not a text file"
+                        Stage tempStage = new Stage();
+                        GridPane error = new GridPane();
+                        error.setAlignment(Pos.CENTER);
+                        Text errorMessage = new Text("You can only open .txt files!");
+                        error.add(errorMessage, 0, 0);
+                        Scene tempScene = new Scene(error, 200, 200);
+                        tempStage.setScene(tempScene);
+                        tempStage.show();
+                    }
+                }
+            });
+            return row;
+        });
 
         //Set up scene
         Scene scene = new Scene(root, 505, 600);
         scene.getStylesheets().add("Colors.css");
         primaryStage.setScene(scene);
         primaryStage.show();
-        System.out.println("Hello, World!");
-        System.out.println("Test");
     }
 
     public static void main(String[] args) {
