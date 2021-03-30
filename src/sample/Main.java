@@ -1,6 +1,8 @@
 package sample;
 
 import javafx.application.Application;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
@@ -32,23 +34,6 @@ public class Main extends Application {
 
 
     File[] content;
-
-    //method to connect to server
-    public Main() {
-        try {
-            socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
-        }
-        catch (UnknownHostException e){
-            System.err.println("Unknown host: "+SERVER_ADDRESS);
-        }
-        catch (IOException e){
-            System.err.println("IOException while connecting to server: "+SERVER_ADDRESS);
-        }
-
-        if (socket == null) {
-            System.err.println("Socket is null");
-        }
-    }
 
     public void selectLocalFolder(Stage stage){ //This is a function to select the local folder that you want to view
         leftTable.getItems().clear();
@@ -96,6 +81,7 @@ public class Main extends Application {
         primaryStage.setTitle("File Sharer V1.0");
 
         //Setup buttons
+        Button connectButton = new Button("Connect");
         Button downloadButton = new Button("Download");
         downloadButton.setMinWidth(246);
         downloadButton.setEffect(new DropShadow(3, Color.BLACK));
@@ -111,6 +97,7 @@ public class Main extends Application {
         topButtons.setPadding(new Insets(2, 0, 2, 1));
         topButtons.add(downloadButton, 0, 0);
         topButtons.add(uploadButton, 1, 0);
+        topButtons.add(connectButton,0,1);
 
         //Set up BorderPane
         BorderPane root = new BorderPane();
@@ -145,7 +132,27 @@ public class Main extends Application {
 
         //Setting up connection tab on bottom right
         connectionStatus(bottomButtons, Color.DARKRED);
-        //TODO: connectionStatus(bottomButtons, Color.LIMEGREEN); Add actual connections
+
+        //Set up connection button to connect to server
+        connectButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                try {
+                    socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
+                    connectionStatus(bottomButtons, Color.LIMEGREEN);
+                }
+                catch (UnknownHostException e){
+                    System.err.println("Unknown host: "+SERVER_ADDRESS);
+                }
+                catch (IOException e){
+                    System.err.println("IOException while connecting to server: "+SERVER_ADDRESS);
+                }
+
+                if (socket == null) {
+                    System.err.println("Socket is null");
+                }
+            }
+        });
 
         //double click on a row to open file
         leftTable.setRowFactory(e -> {
