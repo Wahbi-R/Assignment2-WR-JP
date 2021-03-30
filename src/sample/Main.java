@@ -19,6 +19,10 @@ import java.io.*;
 import java.net.*;
 
 public class Main extends Application {
+    private Socket socket = null;
+
+    public static String SERVER_ADDRESS = "localhost";
+    public static int SERVER_PORT = 8080;
 
     private TableView leftTable = new TableView();
     TableColumn<localData, String> leftTableColumn = new TableColumn<>("File Names");
@@ -28,6 +32,24 @@ public class Main extends Application {
 
 
     File[] content;
+
+    //method to connect to server
+    public Main() {
+        try {
+            socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
+        }
+        catch (UnknownHostException e){
+            System.err.println("Unknown host: "+SERVER_ADDRESS);
+        }
+        catch (IOException e){
+            System.err.println("IOException while connecting to server: "+SERVER_ADDRESS);
+        }
+
+        if (socket == null) {
+            System.err.println("Socket is null");
+        }
+    }
+
     public void selectLocalFolder(Stage stage){ //This is a function to select the local folder that you want to view
         leftTable.getItems().clear();
         DirectoryChooser localDirChooser = new DirectoryChooser();
@@ -185,6 +207,8 @@ public class Main extends Application {
             e.printStackTrace();
         }*/
         //TODO DO THE WHOLE CONNECTION THING
+
+        Main client = new Main();
         launch(args);
     }
 }
