@@ -75,6 +75,23 @@ public class Main extends Application {
         grid.add(connection, tempLoc+1, 0);
     }
 
+    public void handle(GridPane bottomButtons) {
+        try {
+            socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
+            connectionStatus(bottomButtons, Color.LIMEGREEN);
+        }
+        catch (UnknownHostException e){
+            System.err.println("Unknown host: "+SERVER_ADDRESS);
+        }
+        catch (IOException e){
+            System.err.println("IOException while connecting to server: "+SERVER_ADDRESS);
+        }
+
+        if (socket == null) {
+            System.err.println("Socket is null");
+        }
+    }
+
     @Override
     public void start(Stage primaryStage) throws Exception{
         //Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
@@ -134,25 +151,7 @@ public class Main extends Application {
         connectionStatus(bottomButtons, Color.DARKRED);
 
         //Set up connection button to connect to server
-        connectButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                try {
-                    socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
-                    connectionStatus(bottomButtons, Color.LIMEGREEN);
-                }
-                catch (UnknownHostException e){
-                    System.err.println("Unknown host: "+SERVER_ADDRESS);
-                }
-                catch (IOException e){
-                    System.err.println("IOException while connecting to server: "+SERVER_ADDRESS);
-                }
-
-                if (socket == null) {
-                    System.err.println("Socket is null");
-                }
-            }
-        });
+        connectButton.setOnAction(e -> handle(bottomButtons));
 
         //double click on a row to open file
         leftTable.setRowFactory(e -> {
