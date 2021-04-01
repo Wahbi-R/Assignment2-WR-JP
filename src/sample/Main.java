@@ -22,6 +22,9 @@ import java.net.*;
 
 public class Main extends Application {
     private Socket socket = null;
+    private BufferedReader in = null;
+    private PrintWriter networkOut = null;
+    private BufferedReader networkIn = null;
 
     public static String SERVER_ADDRESS = "localhost";
     public static int SERVER_PORT = 8080;
@@ -89,6 +92,16 @@ public class Main extends Application {
 
         if (socket == null) {
             System.err.println("Socket is null");
+        }
+        try {
+            networkOut = new PrintWriter(socket.getOutputStream(), true);
+            networkIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            String message = null;
+
+            message = networkIn.readLine();
+            System.out.println(message);
+        } catch (IOException e) {
+            System.err.println("IOEXception while opening a read/write connection");
         }
     }
 
