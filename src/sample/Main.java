@@ -93,16 +93,7 @@ public class Main extends Application {
         if (socket == null) {
             System.err.println("Socket is null");
         }
-        try {
-            networkOut = new PrintWriter(socket.getOutputStream(), true);
-            networkIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            String message = null;
 
-            message = networkIn.readLine();
-            System.out.println(message);
-        } catch (IOException e) {
-            System.err.println("IOEXception while opening a read/write connection");
-        }
     }
 
     @Override
@@ -166,6 +157,24 @@ public class Main extends Application {
         //Set up connection button to connect to server
         connectButton.setOnAction(e -> handle(bottomButtons));
 
+        //Set up upload button
+        uploadButton.setOnAction(e -> {
+            try {
+                uploadFile(bottomButtons);
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+            }
+        });
+
+        //Set up download button
+        downloadButton.setOnAction(e -> {
+            try {
+                downloadFile(bottomButtons);
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+            }
+        });
+
         //double click on a row to open file
         leftTable.setRowFactory(e -> {
             TableRow<localData> row = new TableRow<>();
@@ -209,7 +218,55 @@ public class Main extends Application {
         primaryStage.show();
     }
 
+    private boolean nullSocket(){
+        if(socket == null || socket.isClosed()) {
+            Stage tempStage = new Stage();
+            GridPane error = new GridPane();
+            error.setAlignment(Pos.CENTER);
+            Text errorMessage = new Text("You are not connected to the server. Press connect!");
+            error.add(errorMessage, 0, 0);
+            Scene tempScene = new Scene(error, 300, 100);
+            tempStage.setScene(tempScene);
+            tempStage.show();
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    private void downloadFile(GridPane buttons) throws IOException {
+        if(nullSocket() == false){
+            InputStreamReader input = new InputStreamReader(socket.getInputStream());
+            BufferedReader reader = new BufferedReader(input);
+            PrintWriter printwriter = new PrintWriter(socket.getOutputStream(), true);
+            String line = "";
+            boolean done = false;
+            while(((line = reader.readLine()) != null)){
+                System.out.println("Received on Client: " + line);
+            }
+            socket.close();
+            connectionStatus(buttons, Color.DARKRED);
+        }
+    }
+    private void uploadFile(GridPane buttons) throws IOException {
+        if(nullSocket() == false){
+//            File sendFile = new File("./LocalFolder/LocalText.txt");
+//            byte byteArray[] = new byte[(int)sendFile.length()];
+//            FileInputStream fileIn = new FileInputStream(sendFile);
+//            BufferedInputStream bufferedFile = new BufferedInputStream(fileIn);
+//            OutputStream out = socket.getOutputStream();
+//            out.write(byteArray, 0, byteArray.length);
+            System.out.println("file sent");
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+            writer.write("YO THIS A TEST WORK MAN");
+            writer.flush();
+            socket.close();
+            connectionStatus(buttons, Color.DARKRED);
+        }
+    }
+
     public static void main(String[] args) {
+
         /*int port = 8080;
         // port to listen default 8080, or the port from the argument
         if (args.length > 0) {
