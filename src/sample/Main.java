@@ -41,8 +41,9 @@ public class Main extends Application {
 
     String localPath;
     File[] content;
-
+    public boolean didSelectLocal = false;
     public void selectLocalFolder(Stage stage){ //This is a function to select the local folder that you want to view
+        didSelectLocal = true;
         leftTable.getItems().clear();
         DirectoryChooser localDirChooser = new DirectoryChooser();
         localDirChooser.setTitle("Open Local Folder");
@@ -280,6 +281,10 @@ public class Main extends Application {
     }
 
     private void downloadFile(GridPane buttons) throws IOException {
+        if(didSelectLocal == false) {
+            selectErr();
+            return;
+        }
         if (nullSocket() == false) {
             sendMessage("DOWNLOAD");
 
@@ -288,7 +293,7 @@ public class Main extends Application {
                 String fileName = name.getFileName();
                 sendMessage(fileName);
                 InputStream input = socket.getInputStream();
-                OutputStream out = new FileOutputStream("./LocalFolder/" + fileName);
+                OutputStream out = new FileOutputStream(localPath + "/" + fileName);
 
                 byte[] buffer = new byte[8192];
                 int len = 0;
@@ -331,6 +336,10 @@ public class Main extends Application {
     }
 
     private void uploadFile(GridPane buttons) throws IOException {
+        if(didSelectLocal == false) {
+            selectErr();
+            return;
+        }
         if(nullSocket() == false){
             sendMessage("UPLOAD");
             localData name = (localData) leftTable.getSelectionModel().getSelectedItem();
@@ -358,6 +367,18 @@ public class Main extends Application {
             socket.close();
             connectionStatus(buttons, Color.DARKRED);
         }
+    }
+
+    private void selectErr() {
+        Stage tempStage = new Stage();
+        GridPane error = new GridPane();
+        error.setAlignment(Pos.CENTER);
+        Text errorMessage = new Text("You didn't select a local folder!");
+        error.add(errorMessage, 0, 0);
+        Scene tempScene = new Scene(error, 200, 200);
+        tempStage.setScene(tempScene);
+        tempStage.show();
+
     }
 
     public static void main(String[] args) {
