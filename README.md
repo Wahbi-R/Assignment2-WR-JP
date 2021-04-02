@@ -5,7 +5,7 @@ This is a remote file sharing program, basically this program lets you choose a 
 from a remote server which is hosted by you as well.
 
 Screenshot of program:\
-![Working_Screenshot](https://user-images.githubusercontent.com/60277254/113385434-27416600-9356-11eb-92f3-bd86b55f2d09.png)
+![java_2021-04-02_13-57-18_nvXFu7Sb3n](https://user-images.githubusercontent.com/37226310/113440942-6229b500-93bb-11eb-814d-719feb9072da.png)
 
 
 
