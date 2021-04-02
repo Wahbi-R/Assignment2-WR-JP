@@ -303,21 +303,25 @@ public class Main extends Application {
         }
         if (nullSocket() == false) {
             sendMessage("DOWNLOAD");
-
             try {
                 localData name = (localData) rightTable.getSelectionModel().getSelectedItem();
-                String fileName = name.getFileName();
-                sendMessage(fileName);
-                InputStream input = socket.getInputStream();
-                OutputStream out = new FileOutputStream(localPath + "/" + fileName);
-
-                byte[] buffer = new byte[8192];
-                int len = 0;
-                while ((len = input.read(buffer)) != -1) {
-                    out.write(buffer, 0, len);
+                if (name == null){
+                    System.err.println("No file selected");
                 }
-                out.flush();
-                System.out.println("Received file on server");
+                else{
+                    String fileName = name.getFileName();
+                    sendMessage(fileName);
+                    InputStream input = socket.getInputStream();
+                    OutputStream out = new FileOutputStream(localPath + "/" + fileName);
+
+                    byte[] buffer = new byte[8192];
+                    int len = 0;
+                    while ((len = input.read(buffer)) != -1) {
+                        out.write(buffer, 0, len);
+                    }
+                    out.flush();
+                    System.out.println("Received file on server");
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -358,30 +362,38 @@ public class Main extends Application {
         }
         if(nullSocket() == false){
             sendMessage("UPLOAD");
-            localData name = (localData) leftTable.getSelectionModel().getSelectedItem();
-            System.out.println(name.getFileName());
-            String path = "NO PATH";
-            for (File current : content) {
-                if (current.getName().equals(name.getFileName())) {
-                    path = current.getPath();
+            try {
+                localData name = (localData) leftTable.getSelectionModel().getSelectedItem();
+                if (name == null) {
+                    System.err.println("No file selected");
+                } else {
+                    System.out.println(name.getFileName());
+                    String path = "NO PATH";
+                    for (File current : content) {
+                        if (current.getName().equals(name.getFileName())) {
+                            path = current.getPath();
+                        }
+                        System.out.println("The current file is: " + current.getName());
+                    }
+                    System.out.println(name.getFileName());
+                    System.out.println(path);
+                    sendMessage(name.getFileName());
+                    InputStream in = new FileInputStream(path);
+                    OutputStream out = socket.getOutputStream();
+                    byte[] buffer = new byte[8192];
+                    int len = 0;
+                    while ((len = in.read(buffer)) != -1) {
+                        out.write(buffer, 0, len);
+                    }
+                    out.flush();
+                    System.out.println("file sent");
                 }
-                System.out.println("The current file is: " + current.getName());
+                socket.close();
+                connectionStatus(buttons, Color.DARKRED);
             }
-            System.out.println(name.getFileName());
-            System.out.println(path);
-            sendMessage(name.getFileName());
-            InputStream in = new FileInputStream(path);
-            OutputStream out = socket.getOutputStream();
-            byte[] buffer = new byte[8192];
-            int len = 0;
-            while((len = in.read(buffer)) != -1){
-                out.write(buffer,0,len);
+            catch(IOException e){
+                e.printStackTrace();
             }
-            out.flush();
-            System.out.println("file sent");
-
-            socket.close();
-            connectionStatus(buttons, Color.DARKRED);
         }
     }
 
