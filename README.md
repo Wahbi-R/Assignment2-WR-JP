@@ -6,6 +6,8 @@ from a remote server which is hosted by you as well.
 
 Screenshot of program:
 [An illustration of the expected output](https://github.com/Wahbi-Raihan/Assignment2-WR-JP/main/Working_Screenshot.png)
+![Working_Screenshot](https://user-images.githubusercontent.com/60277254/113385286-d6317200-9355-11eb-9c24-37f5fa780644.png)
+
 
 Improvements:
 1. Coloured UI
