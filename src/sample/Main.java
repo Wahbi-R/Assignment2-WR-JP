@@ -141,8 +141,8 @@ public class Main extends Application {
         topButtons.setHgap(10);
         topButtons.setVgap(10);
         topButtons.setPadding(new Insets(2, 0, 2, 1));
-        topButtons.add(downloadButton, 0, 0);
-        topButtons.add(uploadButton, 1, 0);
+        topButtons.add(downloadButton, 1, 0);
+        topButtons.add(uploadButton, 0, 0);
         topButtons.add(connectButton,1,1);
         topButtons.add(deleteButton, 0, 1);
 
