@@ -85,6 +85,7 @@ public class Main extends Application {
         grid.add(connection, tempLoc+1, 0);
     }
 
+    //establish connection between client and server and sends message to server to grab list of files in server directory
     public void handle(GridPane bottomButtons) throws IOException {
 
         try {
@@ -99,10 +100,9 @@ public class Main extends Application {
             System.err.println("IOException while connecting to server: "+SERVER_ADDRESS);
         }
 
+        //display message if server is not running
         if (socket == null) {
             System.err.println("Socket is null");
-        }
-        if(socket == null){
             Stage tempStage = new Stage();
             GridPane error = new GridPane();
             error.setAlignment(Pos.CENTER);
@@ -113,13 +113,14 @@ public class Main extends Application {
             tempStage.show();
             return;
         }
+        //sends message to server to retrieve list of file.
         BufferedReader networkIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         String message = networkIn.readLine();
         setRemoteTable(message);
         socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
-        //socket.getInputStream().reset();
     }
 
+    //populates the right table with the list of files in the server directory
     private void setRemoteTable(String message) {
         System.out.println(message);
         rightTable.getItems().clear();
@@ -265,6 +266,7 @@ public class Main extends Application {
         primaryStage.show();
     }
 
+    //method to delete file from client local directory
     private void delete() {
         if(didSelectLocal == false) {
             selectErr();
@@ -280,6 +282,7 @@ public class Main extends Application {
         resetLeftTable();
     }
 
+    //If connection is not established throws popup message to say to connect to server.
     private boolean nullSocket(){
         if(socket == null || socket.isClosed()) {
             Stage tempStage = new Stage();
@@ -296,15 +299,18 @@ public class Main extends Application {
         }
     }
 
+    //method to download file onto client local directory
     private void downloadFile(GridPane buttons) throws IOException {
         if(didSelectLocal == false) {
             selectErr();
             return;
         }
         if (nullSocket() == false) {
+            //sends download command to server
             sendMessage("DOWNLOAD");
             try {
                 localData name = (localData) rightTable.getSelectionModel().getSelectedItem();
+                //checks if there is a file selected on the server table
                 if (name == null){
                     System.err.println("No file selected");
                 }
@@ -312,6 +318,7 @@ public class Main extends Application {
                     String fileName = name.getFileName();
                     sendMessage(fileName);
                     InputStream input = socket.getInputStream();
+                    //downloads file onto client local directory
                     OutputStream out = new FileOutputStream(localPath + "/" + fileName);
 
                     byte[] buffer = new byte[8192];
@@ -331,6 +338,7 @@ public class Main extends Application {
         resetLeftTable();
     }
 
+    //repopulate local directory table with updated list
     private void resetLeftTable() {
         leftTable.getItems().clear();
         System.out.println(localPath);
@@ -343,6 +351,7 @@ public class Main extends Application {
         }
     }
 
+    //method to send message to server to process
     private void sendMessage(String message) throws IOException {
         OutputStream outputStream = socket.getOutputStream();
         DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
@@ -351,19 +360,20 @@ public class Main extends Application {
         // write the message we want to send
         dataOutputStream.writeUTF(message);
         dataOutputStream.flush(); // send the message
-        //dataOutputStream.close();
-        //outputStream.flush();
     }
 
+    //method to upload file from client local directory to server directory
     private void uploadFile(GridPane buttons) throws IOException {
         if(didSelectLocal == false) {
             selectErr();
             return;
         }
         if(nullSocket() == false){
+            //sends upload command to server
             sendMessage("UPLOAD");
             try {
                 localData name = (localData) leftTable.getSelectionModel().getSelectedItem();
+                //checks if file selected is null
                 if (name == null) {
                     System.err.println("No file selected");
                 } else {
@@ -373,11 +383,12 @@ public class Main extends Application {
                         if (current.getName().equals(name.getFileName())) {
                             path = current.getPath();
                         }
-                        System.out.println("The current file is: " + current.getName());
                     }
                     System.out.println(name.getFileName());
                     System.out.println(path);
+                    //sends file name to be uploaded
                     sendMessage(name.getFileName());
+                    //uploads file to server directory
                     InputStream in = new FileInputStream(path);
                     OutputStream out = socket.getOutputStream();
                     byte[] buffer = new byte[8192];
@@ -397,6 +408,7 @@ public class Main extends Application {
         }
     }
 
+    //display popup message if user didn't select local folder
     private void selectErr() {
         Stage tempStage = new Stage();
         GridPane error = new GridPane();
