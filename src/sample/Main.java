@@ -39,7 +39,7 @@ public class Main extends Application {
     TableColumn<localData, String> rightTableColumnFileName = new TableColumn<>("Remote Files");
     TableColumn<localData, String> rightTableColumnButton = new TableColumn<>("Button");
 
-
+    String localPath;
     File[] content;
 
     public void selectLocalFolder(Stage stage){ //This is a function to select the local folder that you want to view
@@ -47,6 +47,7 @@ public class Main extends Application {
         DirectoryChooser localDirChooser = new DirectoryChooser();
         localDirChooser.setTitle("Open Local Folder");
         File localFolder = localDirChooser.showDialog(stage);
+        localPath = localFolder.getPath();
         content = localFolder.listFiles();
         if(localFolder.isDirectory()){
             for(File current : content){
@@ -102,9 +103,12 @@ public class Main extends Application {
         BufferedReader networkIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         String message = networkIn.readLine();
         setRemoteTable(message);
+        socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
+        //socket.getInputStream().reset();
     }
 
     private void setRemoteTable(String message) {
+        System.out.println(message);
         rightTable.getItems().clear();
         List<String> fileNames = Arrays.asList(message.split(","));
         for(int i = 0; i<fileNames.size(); i++)
@@ -118,6 +122,11 @@ public class Main extends Application {
 
         //Setup buttons
         Button connectButton = new Button("Connect");
+        connectButton.setMinWidth(246);
+        connectButton.setEffect(new DropShadow(3, Color.BLACK));
+        Button deleteButton = new Button("Delete File");
+        deleteButton.setMinWidth(248);
+        deleteButton.setEffect(new DropShadow(3, Color.BLACK));
         Button downloadButton = new Button("Download");
         downloadButton.setMinWidth(246);
         downloadButton.setEffect(new DropShadow(3, Color.BLACK));
@@ -133,7 +142,8 @@ public class Main extends Application {
         topButtons.setPadding(new Insets(2, 0, 2, 1));
         topButtons.add(downloadButton, 0, 0);
         topButtons.add(uploadButton, 1, 0);
-        topButtons.add(connectButton,0,1);
+        topButtons.add(connectButton,1,1);
+        topButtons.add(deleteButton, 0, 1);
 
         //Set up BorderPane
         BorderPane root = new BorderPane();
@@ -177,6 +187,9 @@ public class Main extends Application {
                 ioException.printStackTrace();
             }
         });
+
+        //Set up delete button to delete a file
+        deleteButton.setOnAction(e -> delete());
 
         //Set up upload button
         uploadButton.setOnAction(e -> {
@@ -239,6 +252,17 @@ public class Main extends Application {
         primaryStage.show();
     }
 
+    private void delete() {
+        localData name = (localData) leftTable.getSelectionModel().getSelectedItem();
+        leftTable.getItems().remove(name);
+        for (File current : content) {
+            if (current.getName().equals(name.getFileName())) {
+                current.delete();
+            }
+        }
+        resetLeftTable();
+    }
+
     private boolean nullSocket(){
         if(socket == null || socket.isClosed()) {
             Stage tempStage = new Stage();
@@ -256,14 +280,14 @@ public class Main extends Application {
     }
 
     private void downloadFile(GridPane buttons) throws IOException {
-        if(nullSocket() == false){
+        if (nullSocket() == false) {
             sendMessage("DOWNLOAD");
 
             try {
-                InputStream input = socket.getInputStream();
                 localData name = (localData) rightTable.getSelectionModel().getSelectedItem();
                 String fileName = name.getFileName();
-                //sendMessage(fileName);
+                sendMessage(fileName);
+                InputStream input = socket.getInputStream();
                 OutputStream out = new FileOutputStream("./LocalFolder/" + fileName);
 
                 byte[] buffer = new byte[8192];
@@ -271,14 +295,26 @@ public class Main extends Application {
                 while ((len = input.read(buffer)) != -1) {
                     out.write(buffer, 0, len);
                 }
-                input.close();
-                out.close();
+                out.flush();
                 System.out.println("Received file on server");
             } catch (IOException e) {
                 e.printStackTrace();
             }
             socket.close();
             connectionStatus(buttons, Color.DARKRED);
+        }
+        resetLeftTable();
+    }
+
+    private void resetLeftTable() {
+        leftTable.getItems().clear();
+        System.out.println(localPath);
+        File localFolder = new File(localPath);
+        content = localFolder.listFiles();
+        if(localFolder.isDirectory()){
+            for(File current : content){
+                leftTable.getItems().add(new localData(current.getName()));
+            }
         }
     }
 
@@ -290,7 +326,8 @@ public class Main extends Application {
         // write the message we want to send
         dataOutputStream.writeUTF(message);
         dataOutputStream.flush(); // send the message
-        outputStream.flush();
+        //dataOutputStream.close();
+        //outputStream.flush();
     }
 
     private void uploadFile(GridPane buttons) throws IOException {
@@ -307,7 +344,7 @@ public class Main extends Application {
             }
             System.out.println(name.getFileName());
             System.out.println(path);
-            //sendMessage(content.);
+            sendMessage(name.getFileName());
             InputStream in = new FileInputStream(path);
             OutputStream out = socket.getOutputStream();
             byte[] buffer = new byte[8192];
@@ -315,8 +352,7 @@ public class Main extends Application {
             while((len = in.read(buffer)) != -1){
                 out.write(buffer,0,len);
             }
-            out.close();
-            in.close();
+            out.flush();
             System.out.println("file sent");
 
             socket.close();

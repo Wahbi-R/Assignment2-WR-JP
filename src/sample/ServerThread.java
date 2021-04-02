@@ -1,13 +1,11 @@
 package sample;
-
 import java.io.*;
 import java.net.*;
-import java.util.*;
+
 
 public class ServerThread extends Thread {
-    protected Socket socket = null;
+    protected Socket socket;
     protected PrintWriter out = null;
-    protected BufferedReader in = null;
 
     public ServerThread(Socket socket){
         super();
@@ -16,7 +14,7 @@ public class ServerThread extends Thread {
             out = new PrintWriter(socket.getOutputStream(), true);
         }
         catch(IOException e){
-            System.err.println("IOEXception while opening a read/write connection");
+            System.err.println("IOException while opening a read/write connection");
         }
     }
 
@@ -28,11 +26,7 @@ public class ServerThread extends Thread {
             message = checkMessage();
             //Message sent from client to server
             System.out.println("Message = " + message);
-            if(message.equals("CONNECT")) {
-                out = new PrintWriter(socket.getOutputStream(), true);
-
-                folderFiles();
-            }
+            if(message.equals("CONNECT")) { folderFiles(); }
             if(message.equals("UPLOAD")) receiveFile();
             if(message.equals("DOWNLOAD")) sendFile();
             socket.close();
@@ -57,6 +51,7 @@ public class ServerThread extends Thread {
     }
 
     private void sendFile() throws IOException {
+        try {
         String fileName = checkMessage();
         InputStream in = new FileInputStream("./RemoteFolder/" + fileName);
         OutputStream out = socket.getOutputStream();
@@ -66,22 +61,25 @@ public class ServerThread extends Thread {
             out.write(buffer,0,len);
         }
         out.flush();
-        in.reset();
+
         System.out.println("file sent");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void receiveFile() throws IOException {
         try {
+            String message = checkMessage();
             socket.getOutputStream().flush();
             InputStream input = socket.getInputStream();
-            OutputStream out = new FileOutputStream("ServerReceive.txt");
+            OutputStream out = new FileOutputStream("./RemoteFolder/" + message);
             byte[] buffer = new byte[8192];
             int len = 0;
             while ((len = input.read(buffer)) != -1) {
                 out.write(buffer, 0, len);
             }
             out.flush();
-            input.reset();
             System.out.println("Received file on server");
         } catch (IOException e) {
             e.printStackTrace();
@@ -90,7 +88,6 @@ public class ServerThread extends Thread {
 
     private String checkMessage() throws IOException {
         InputStream inputStream = socket.getInputStream();
-
         // create a DataInputStream so we can read data from it.
         DataInputStream dataInputStream = new DataInputStream(inputStream);
 
