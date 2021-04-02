@@ -86,17 +86,7 @@ public class Main extends Application {
     }
 
     public void handle(GridPane bottomButtons) throws IOException {
-        if(socket == null){
-            Stage tempStage = new Stage();
-            GridPane error = new GridPane();
-            error.setAlignment(Pos.CENTER);
-            Text errorMessage = new Text("Your server is not running!");
-            error.add(errorMessage, 0, 0);
-            Scene tempScene = new Scene(error, 200, 200);
-            tempStage.setScene(tempScene);
-            tempStage.show();
-            return;
-        }
+
         try {
             socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
             connectionStatus(bottomButtons, Color.LIMEGREEN);
@@ -111,6 +101,17 @@ public class Main extends Application {
 
         if (socket == null) {
             System.err.println("Socket is null");
+        }
+        if(socket == null){
+            Stage tempStage = new Stage();
+            GridPane error = new GridPane();
+            error.setAlignment(Pos.CENTER);
+            Text errorMessage = new Text("Your server is not running!");
+            error.add(errorMessage, 0, 0);
+            Scene tempScene = new Scene(error, 200, 200);
+            tempStage.setScene(tempScene);
+            tempStage.show();
+            return;
         }
         BufferedReader networkIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         String message = networkIn.readLine();
