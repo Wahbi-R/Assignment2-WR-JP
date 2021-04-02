@@ -13,10 +13,12 @@ public class Server {
 
     public Server() {
         try{
+            //creates server socket to listen for client
             serverSocket = new ServerSocket(SERVER_PORT);
             System.out.println("Server is running");
             System.out.println("Listening to port: "+SERVER_PORT);
 
+            //accepts client socket and starts thread
             while(true){
                 clientSocket = serverSocket.accept();
                 ClientConnectionHandler = new ServerThread(clientSocket);
