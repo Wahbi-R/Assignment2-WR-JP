@@ -19,6 +19,8 @@ import javafx.stage.Stage;
 import javafx.scene.shape.Circle;
 import java.io.*;
 import java.net.*;
+import java.util.Arrays;
+import java.util.List;
 
 public class Main extends Application {
     private Socket socket = null;
@@ -30,10 +32,12 @@ public class Main extends Application {
     public static int SERVER_PORT = 8080;
 
     private TableView leftTable = new TableView();
-    TableColumn<localData, String> leftTableColumn = new TableColumn<>("File Names");
+    TableColumn<localData, String> leftTableColumnFileName = new TableColumn<>("Local Files");
+    TableColumn<localData, String> leftTableColumnButton = new TableColumn<>("Button");
 
     private TableView rightTable = new TableView();
-    TableColumn<localData, String> rightTableColumn = new TableColumn<>("File Names");
+    TableColumn<localData, String> rightTableColumnFileName = new TableColumn<>("Remote Files");
+    TableColumn<localData, String> rightTableColumnButton = new TableColumn<>("Button");
 
 
     File[] content;
@@ -53,6 +57,7 @@ public class Main extends Application {
 
     public void connectionStatus(GridPane grid, Color colour){ //This is a function to change the bottom right of the
                                                                //screens connection status
+
         Text connection = new Text();
         int tempLoc = 27;
         DropShadow dropShadow = new DropShadow(); //Drop shadow for circle
@@ -78,10 +83,11 @@ public class Main extends Application {
         grid.add(connection, tempLoc+1, 0);
     }
 
-    public void handle(GridPane bottomButtons) {
+    public void handle(GridPane bottomButtons) throws IOException {
         try {
             socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
             connectionStatus(bottomButtons, Color.LIMEGREEN);
+            sendMessage("CONNECT");
         }
         catch (UnknownHostException e){
             System.err.println("Unknown host: "+SERVER_ADDRESS);
@@ -93,7 +99,16 @@ public class Main extends Application {
         if (socket == null) {
             System.err.println("Socket is null");
         }
+        BufferedReader networkIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        String message = networkIn.readLine();
+        setRemoteTable(message);
+    }
 
+    private void setRemoteTable(String message) {
+        rightTable.getItems().clear();
+        List<String> fileNames = Arrays.asList(message.split(","));
+        for(int i = 0; i<fileNames.size(); i++)
+        rightTable.getItems().add(new localData(fileNames.get(i)));
     }
 
     @Override
@@ -125,17 +140,17 @@ public class Main extends Application {
         root.setTop(topButtons);
 
         //Set up left table
-        leftTableColumn.setCellValueFactory(new PropertyValueFactory<>("fileName"));
+        leftTableColumnFileName.setCellValueFactory(new PropertyValueFactory<>("fileName"));
         leftTable.setEffect(new DropShadow(3, 0, 1, Color.BLACK));
         root.setLeft(leftTable);
-        leftTable.getColumns().add(leftTableColumn);
+        leftTable.getColumns().add(leftTableColumnFileName);
         leftTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         //Set up right table
         root.setRight(rightTable);
         rightTable.setEffect(new DropShadow(3, 1, 1, Color.BLACK));
-        rightTableColumn.setCellValueFactory(new PropertyValueFactory<>("fileName"));
-        rightTable.getColumns().add(rightTableColumn);
+        rightTableColumnFileName.setCellValueFactory(new PropertyValueFactory<>("fileName"));
+        rightTable.getColumns().add(rightTableColumnFileName);
         rightTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         //Set up local directory button
@@ -155,7 +170,13 @@ public class Main extends Application {
         connectionStatus(bottomButtons, Color.DARKRED);
 
         //Set up connection button to connect to server
-        connectButton.setOnAction(e -> handle(bottomButtons));
+        connectButton.setOnAction(e -> {
+            try {
+                handle(bottomButtons);
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+            }
+        });
 
         //Set up upload button
         uploadButton.setOnAction(e -> {
@@ -236,55 +257,74 @@ public class Main extends Application {
 
     private void downloadFile(GridPane buttons) throws IOException {
         if(nullSocket() == false){
-            InputStreamReader input = new InputStreamReader(socket.getInputStream());
-            BufferedReader reader = new BufferedReader(input);
-            PrintWriter printwriter = new PrintWriter(socket.getOutputStream(), true);
-            String line = "";
-            boolean done = false;
-            while(((line = reader.readLine()) != null)){
-                System.out.println("Received on Client: " + line);
+            sendMessage("DOWNLOAD");
+
+            try {
+                InputStream input = socket.getInputStream();
+                localData name = (localData) rightTable.getSelectionModel().getSelectedItem();
+                String fileName = name.getFileName();
+                //sendMessage(fileName);
+                OutputStream out = new FileOutputStream("./LocalFolder/" + fileName);
+
+                byte[] buffer = new byte[8192];
+                int len = 0;
+                while ((len = input.read(buffer)) != -1) {
+                    out.write(buffer, 0, len);
+                }
+                input.close();
+                out.close();
+                System.out.println("Received file on server");
+            } catch (IOException e) {
+                e.printStackTrace();
             }
             socket.close();
             connectionStatus(buttons, Color.DARKRED);
         }
     }
+
+    private void sendMessage(String message) throws IOException {
+        OutputStream outputStream = socket.getOutputStream();
+        DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
+        System.out.println("Sending message to the server");
+
+        // write the message we want to send
+        dataOutputStream.writeUTF(message);
+        dataOutputStream.flush(); // send the message
+        outputStream.flush();
+    }
+
     private void uploadFile(GridPane buttons) throws IOException {
         if(nullSocket() == false){
-//            File sendFile = new File("./LocalFolder/LocalText.txt");
-//            byte byteArray[] = new byte[(int)sendFile.length()];
-//            FileInputStream fileIn = new FileInputStream(sendFile);
-//            BufferedInputStream bufferedFile = new BufferedInputStream(fileIn);
-//            OutputStream out = socket.getOutputStream();
-//            out.write(byteArray, 0, byteArray.length);
+            sendMessage("UPLOAD");
+            localData name = (localData) leftTable.getSelectionModel().getSelectedItem();
+            System.out.println(name.getFileName());
+            String path = "NO PATH";
+            for (File current : content) {
+                if (current.getName().equals(name.getFileName())) {
+                    path = current.getPath();
+                }
+                System.out.println("The current file is: " + current.getName());
+            }
+            System.out.println(name.getFileName());
+            System.out.println(path);
+            //sendMessage(content.);
+            InputStream in = new FileInputStream(path);
+            OutputStream out = socket.getOutputStream();
+            byte[] buffer = new byte[8192];
+            int len = 0;
+            while((len = in.read(buffer)) != -1){
+                out.write(buffer,0,len);
+            }
+            out.close();
+            in.close();
             System.out.println("file sent");
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-            writer.write("YO THIS A TEST WORK MAN");
-            writer.flush();
+
             socket.close();
             connectionStatus(buttons, Color.DARKRED);
         }
     }
 
     public static void main(String[] args) {
-
-        /*int port = 8080;
-        // port to listen default 8080, or the port from the argument
-        if (args.length > 0) {
-            port = Integer.parseInt(args[0]);
-        }
-
-        try {
-            //Instantiating the HttpServer Class
-            HttpServer server = new HttpServer(port);
-            // handle any requests from the port
-            server.handleRequests();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
-        //TODO DO THE WHOLE CONNECTION THING
-
-        Main client = new Main();
         launch(args);
     }
 }
