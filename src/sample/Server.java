@@ -7,7 +7,7 @@ import java.util.Vector;
 public class Server {
     protected Socket clientSocket = null;
     protected ServerSocket serverSocket = null;
-    protected ServerThread thread = null;
+    protected ServerThread ClientConnectionHandler = null;
 
     public static int SERVER_PORT = 8080;
 
@@ -19,8 +19,8 @@ public class Server {
 
             while(true){
                 clientSocket = serverSocket.accept();
-                thread = new ServerThread(clientSocket);
-                thread.start();
+                ClientConnectionHandler = new ServerThread(clientSocket);
+                ClientConnectionHandler.start();
                 System.out.println("Client has connected to server");
             }
         }
