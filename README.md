@@ -1,6 +1,6 @@
 # Assignment2-WR-JP
 Assignment 2 for 2020U\
-Creators: Wahbi Raihan & Jacky Phung
+Creators: Wahbi Raihan (100751913) & Jacky Phung (100766321)
 This is a remote file sharing program, basically this program lets you choose a folder and download or upload files
 from a remote server which is hosted by you as well.
 
