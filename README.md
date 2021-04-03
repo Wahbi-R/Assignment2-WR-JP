@@ -19,7 +19,7 @@ Improvements:
 7. If on windows, can double click text files in local directory to open them.
 8. Improved built in feature by now being able to move any file rather than just text files.
 
-Other Resources:
+How to run:
 1. Clone project to folder
 1. Open IntelliJ
 2. Go to File>Open>Cloned project 
@@ -39,8 +39,14 @@ Other Resources:
 16. On the top right hit the Run Arrow on Server
 17. Use the application!
 
+To test with multiple clients:
+1. Go to Run>Edit Configuration
+2. Click on Modify Options dropdown and hit "Allow multiple instances"
+3. Then simply run addtional applications
+
 Program Notes:
 - To reconnect to the server everytime you have to hit Connect which will also renew the directory you see
 - To upload a file select a file in the local files tab then tap upload (which moves from local to server)
 - To download a file select a file in the remote files tab and tap the download button (which moves from server to local)
 - Double click a file to open it
+- Max amount of connections is 50.
