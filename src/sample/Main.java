@@ -232,7 +232,7 @@ public class Main extends Application {
                     if (rowData.getFileName().contains(".txt")) { //Checking if the file is a text file
                         try {
                             String path = "";
-                            for (File current : content) {
+                            for (File current : content) { //Getting file path
                                 if (current.getName().equals(rowData.getFileName())) {
                                     path = current.getAbsolutePath();
                                 }
@@ -240,7 +240,7 @@ public class Main extends Application {
                                 System.out.println(rowData.getFileName());
                                 System.out.println(path);
                             }
-                            Runtime.getRuntime().exec(new String[]{"notepad", path});
+                            Runtime.getRuntime().exec(new String[]{"notepad", path}); //Opening notepad with text file
                         } catch (IOException e3) {
                             System.out.println(e3);
                         }
@@ -272,7 +272,7 @@ public class Main extends Application {
             selectErr();
             return;
         }
-        localData name = (localData) leftTable.getSelectionModel().getSelectedItem();
+        localData name = (localData) leftTable.getSelectionModel().getSelectedItem(); //Removing file from table
         leftTable.getItems().remove(name);
         for (File current : content) {
             if (current.getName().equals(name.getFileName())) {
@@ -282,7 +282,7 @@ public class Main extends Application {
         resetLeftTable();
     }
 
-    //If connection is not established throws popup message to say to connect to server.
+    //If connection is not established throws pop-up message to say to connect to server.
     private boolean nullSocket(){
         if(socket == null || socket.isClosed()) {
             Stage tempStage = new Stage();
@@ -309,7 +309,7 @@ public class Main extends Application {
             //sends download command to server
             sendMessage("DOWNLOAD");
             try {
-                localData name = (localData) rightTable.getSelectionModel().getSelectedItem();
+                localData name = (localData) rightTable.getSelectionModel().getSelectedItem(); //Adding file to right table
                 //checks if there is a file selected on the server table
                 if (name == null){
                     System.err.println("No file selected");
